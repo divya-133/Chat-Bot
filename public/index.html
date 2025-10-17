@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StaunchDesk Chat – Turn Visitors into Customers</title>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- ✅ EmailJS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script>
+    (function() {
+      emailjs.init("SIow_hASu5YmPaift"); // <-- Your EmailJS public key
+    })();
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="logo">
+      <img src="logo.png" alt="Logo" class="logo-img" /> StaunchDesk
+    </div>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how">How It Works</a>
+      <a href="#pricing">Pricing</a>
+      <button class="btn-primary">Get Started Free</button>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <header class="hero">
+    <div class="hero-content">
+      <h1>Turn Visitors into Customers with Instant Chat Support</h1>
+      <p>Engage, support, and convert – all from one simple chatbot widget.</p>
+      <div class="cta-buttons">
+        <button class="btn-primary">Get Started Free</button>
+        <button class="btn-secondary">Request a Demo</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HOW IT WORKS -->
+  <section id="how" class="how-section">
+    <h2>How It Works</h2>
+    <div class="steps">
+      <div class="step">
+        <img src="https://cdn-icons-png.flaticon.com/512/684/684908.png" alt="">
+        <h3>1. Click the Chat Icon</h3>
+        <p>Visitors click the chat icon at the bottom-right of your website.</p>
+      </div>
+      <div class="step">
+        <img src="https://cdn-icons-png.flaticon.com/512/893/893292.png" alt="">
+        <h3>2. Choose Department</h3>
+        <p>They choose Sales, Support, or Technical Help.</p>
+      </div>
+      <div class="step">
+        <img src="https://cdn-icons-png.flaticon.com/512/1828/1828919.png" alt="">
+        <h3>3. Start Chat</h3>
+        <p>They chat instantly with an agent or leave a message.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" class="features-section">
+    <h2>Key Features</h2>
+    <div class="feature-grid">
+      <div class="feature"><h3>💬 Floating Chat Widget</h3><p>Always visible at the bottom-right corner.</p></div>
+      <div class="feature"><h3>🧭 Smart Routing</h3><p>Auto-directs to the right department (Sales/Support/Tech).</p></div>
+      <div class="feature"><h3>🤖 Live + AI Fallback</h3><p>AI answers when your agents are offline.</p></div>
+      <div class="feature"><h3>🔗 CRM Integration</h3><p>Every chat is logged as a lead or ticket.</p></div>
+      <div class="feature"><h3>⚙️ 5-Minute Setup</h3><p>Just copy & paste a script snippet.</p></div>
+      <div class="feature"><h3>🎨 Fully Customizable</h3><p>Brand it with your colors, logo & greeting.</p></div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>© 2025 StaunchDesk Chat. All rights reserved.</p>
+  </footer>
+
+  <!-- ✅ CUSTOM CHAT WIDGET -->
+  <div class="custom-chat-widget">
+    <div class="custom-chat-icon" onclick="toggleChat()">💬</div>
+
+    <div class="custom-chat-box hidden" id="chatBox">
+      <div class="custom-chat-header">
+        <span id="chatHeaderTitle">Chat with us now</span>
+        <span class="custom-close-btn" onclick="toggleChat()">&times;</span>
+      </div>
+
+      <!-- Form Section -->
+      <form id="supportForm" class="custom-chat-form">
+        <input type="text" id="name" placeholder="Your name" required />
+        <input type="email" id="email" placeholder="Your email" required />
+        <input type="tel" id="phone" placeholder="Phone" />
+
+        <select id="supportType" required>
+          <option value="">Choose department</option>
+          <option value="Sales">Sales Support</option>
+          <option value="Support"> General Support</option>
+          <option value="Technical">Technical Support</option>
+        </select>
+
+        <!-- <select id="supportType" required></select> -->
+
+        <textarea id="query" placeholder="Type your query..." required></textarea>
+
+        <button type="submit" class="start-chat-btn">Start Chat</button>
+        <div id="message"></div>
+      </form>
+
+      <!-- Chat Messages -->
+      <div class="chat-body hidden"></div>
+      <div class="typing-indicator hidden">Agent is typing<span class="dots"></span></div>
+
+      <!-- Chat Input -->
+      <div class="chat-input hidden">
+        <input type="text" placeholder="Type your query..." />
+        <button>Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
+
