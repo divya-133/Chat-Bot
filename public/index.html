@@ -5,16 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>StaunchDesk Chat – Turn Visitors into Customers</title>
 
-  <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
 
   <!-- ✅ EmailJS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-  <script>
-    (function() {
-      emailjs.init("SIow_hASu5YmPaift"); // <-- Your EmailJS public key
-    })();
-  </script>
 
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
 </head>
@@ -104,11 +98,9 @@
         <select id="supportType" required>
           <option value="">Choose department</option>
           <option value="Sales">Sales Support</option>
-          <option value="Support"> General Support</option>
+          <option value="Support">General Support</option>
           <option value="Technical">Technical Support</option>
         </select>
-
-        <!-- <select id="supportType" required></select> -->
 
         <textarea id="query" placeholder="Type your query..." required></textarea>
 
@@ -116,11 +108,9 @@
         <div id="message"></div>
       </form>
 
-      <!-- Chat Messages -->
       <div class="chat-body hidden"></div>
       <div class="typing-indicator hidden">Agent is typing<span class="dots"></span></div>
 
-      <!-- Chat Input -->
       <div class="chat-input hidden">
         <input type="text" placeholder="Type your query..." />
         <button>Send</button>
@@ -131,5 +121,4 @@
   <script src="script.js"></script>
 </body>
 </html>
-
 

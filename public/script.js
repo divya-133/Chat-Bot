@@ -1,11 +1,28 @@
-// ----- Agents & Departments -----
+// -----------------------------
+// Load EmailJS config securely
+// -----------------------------
+fetch("/config")
+  .then(res => res.json())
+  .then(cfg => {
+    emailjs.init(cfg.EMAILJS_PUBLIC_KEY);
+    window.EMAILJS_SERVICE_ID = cfg.EMAILJS_SERVICE_ID;
+    window.EMAILJS_TEMPLATE_ID = cfg.EMAILJS_TEMPLATE_ID;
+    console.log("✅ EmailJS initialized securely");
+  })
+  .catch(err => console.error("❌ Failed to load EmailJS config:", err));
+
+// -----------------------------
+// Agents & Departments
+// -----------------------------
 const agents = {
   "Sales": { name: "Shiva", online: true },
   "Support": { name: "Rahul", online: false },
   "Technical": { name: "Ananya", online: true }
 };
 
-// ----- DOM Elements -----
+// -----------------------------
+// DOM Elements
+// -----------------------------
 const chatBox = document.getElementById("chatBox");
 const chatBody = document.querySelector(".chat-body");
 const chatInput = document.querySelector(".chat-input input");
@@ -16,12 +33,16 @@ const supportForm = document.getElementById("supportForm");
 const messageDiv = document.getElementById("message");
 const chatInputContainer = document.querySelector(".chat-input");
 
-// ----- Toggle Chat -----
+// -----------------------------
+// Toggle Chat
+// -----------------------------
 function toggleChat() {
   chatBox.classList.toggle("hidden");
 }
 
-// ----- Knowledge Base -----
+// -----------------------------
+// Knowledge Base
+// -----------------------------
 const knowledgeBase = {
   "Support": [
     { keywords: ["reset password", "forgot password"], responses: ["You can reset your password via Settings → Security → Reset Password.", "Use the 'Forgot Password' link on the login page."] },
@@ -38,7 +59,9 @@ const knowledgeBase = {
 let currentDept = "";
 let currentUser = "";
 
-// ----- Append Message -----
+// -----------------------------
+// Append Message
+// -----------------------------
 function appendMessage(sender, text) {
   const msgDiv = document.createElement("div");
   msgDiv.classList.add(sender === "user" ? "user-msg" : "agent-msg");
@@ -47,7 +70,9 @@ function appendMessage(sender, text) {
   chatBody.scrollTop = chatBody.scrollHeight;
 }
 
-// ----- Get AI Reply -----
+// -----------------------------
+// Get AI Reply
+// -----------------------------
 function getRandomReply(message, dept) {
   const kb = knowledgeBase[dept];
   if (!kb) return "🤖 Sorry, I’m not trained for that department yet.";
@@ -63,7 +88,9 @@ function getRandomReply(message, dept) {
   return "🤖 I'm sorry, I can only assist with questions related to our services.";
 }
 
-// ----- Support Form Submission -----
+// -----------------------------
+// Support Form Submission
+// -----------------------------
 supportForm.addEventListener("submit", function (e) {
   e.preventDefault();
 
@@ -92,7 +119,7 @@ supportForm.addEventListener("submit", function (e) {
       support_type: dept,
       message: query
     };
-    emailjs.send("service_4hnwgkj", "template_flfcfxc", templateParams)
+    emailjs.send(window.EMAILJS_SERVICE_ID, window.EMAILJS_TEMPLATE_ID, templateParams)
       .then(() => {
         messageDiv.textContent = "✅ Thanks for contacting StaunchDesk! We’ll respond soon.";
         messageDiv.style.color = "green";
@@ -105,7 +132,9 @@ supportForm.addEventListener("submit", function (e) {
   }
 });
 
-// ----- Sending Messages -----
+// -----------------------------
+// Sending Messages
+// -----------------------------
 sendBtn.addEventListener("click", sendMessage);
 chatInput.addEventListener("keypress", e => { if (e.key === "Enter") sendMessage(); });
 
@@ -123,6 +152,4 @@ function sendMessage() {
     appendMessage("agent", reply);
   }, 800);
 }
-
-
 
