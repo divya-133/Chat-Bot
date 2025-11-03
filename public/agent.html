@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="agent.css" />
+</head>
+<body>
+  <div class="agent-dashboard">
+    <!-- LEFT PANEL -->
+    <aside class="sidebar">
+      <div class="header">
+        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712028.png" alt="logo" />
+        <h2>Agent Panel</h2>
+      </div>
+
+      <form id="agentForm" class="agent-form">
+        <label>Agent Name
+          <input id="agentName" placeholder="Enter name" required />
+        </label>
+
+        <label>Email
+          <input id="agentEmail" placeholder="Enter email" required />
+        </label>
+
+        <label>Department
+          <select id="department" required>
+            <option>Support</option>
+            <option>Sales</option>
+            <option>HR</option>
+          </select>
+        </label>
+
+        <button type="submit" class="btn primary">Go Online</button>
+      </form>
+
+      <div id="statusContainer" class="status-container">
+        <div id="statusPulse" class="status-pulse offline"></div>
+        <span id="statusText" class="status-text">Offline</span>
+      </div>
+
+      <button id="goOfflineBtn" class="btn ghost hidden">Go Offline</button>
+    </aside>
+
+    <!-- RIGHT PANEL -->
+    <main id="chatSection" class="chat-section hidden">
+      <div class="top-bar">
+        <div class="agent-info">
+          <div class="avatar">
+            <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" />
+          </div>
+          <div>
+            <h3 id="agentDisplayName">Agent</h3>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-body">
+        <div class="chat-list">
+          <h4>Active Chats</h4>
+          <ul id="chatList"></ul>
+        </div>
+
+        <div id="chatWindow" class="chat-window hidden">
+          <div id="chatMessages" class="chat-box"></div>
+          <div class="msg-row">
+            <input id="agentMessage" placeholder="Type your reply..." />
+            <button id="sendMsgBtn" class="btn primary">Send</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="agent.js"></script>
+</body>
+</html>

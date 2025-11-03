@@ -1,155 +1,184 @@
-// -----------------------------
-// Load EmailJS config securely
-// -----------------------------
-fetch("/config")
-  .then(res => res.json())
-  .then(cfg => {
-    emailjs.init(cfg.EMAILJS_PUBLIC_KEY);
-    window.EMAILJS_SERVICE_ID = cfg.EMAILJS_SERVICE_ID;
-    window.EMAILJS_TEMPLATE_ID = cfg.EMAILJS_TEMPLATE_ID;
-    console.log("✅ EmailJS initialized securely");
-  })
-  .catch(err => console.error("❌ Failed to load EmailJS config:", err));
-
-// -----------------------------
-// Agents & Departments
-// -----------------------------
-const agents = {
-  "Sales": { name: "Shiva", online: true },
-  "Support": { name: "Rahul", online: false },
-  "Technical": { name: "Ananya", online: true }
-};
-
-// -----------------------------
-// DOM Elements
-// -----------------------------
-const chatBox = document.getElementById("chatBox");
-const chatBody = document.querySelector(".chat-body");
-const chatInput = document.querySelector(".chat-input input");
-const sendBtn = document.querySelector(".chat-input button");
-const typingIndicator = document.querySelector(".typing-indicator");
-const chatHeaderTitle = document.getElementById("chatHeaderTitle");
-const supportForm = document.getElementById("supportForm");
-const messageDiv = document.getElementById("message");
-const chatInputContainer = document.querySelector(".chat-input");
-
-// -----------------------------
-// Toggle Chat
-// -----------------------------
+// -------------------- TOGGLE CHAT --------------------
 function toggleChat() {
+  const chatBox = document.getElementById("chatBox");
   chatBox.classList.toggle("hidden");
 }
+window.toggleChat = toggleChat;
 
-// -----------------------------
-// Knowledge Base
-// -----------------------------
-const knowledgeBase = {
-  "Support": [
-    { keywords: ["reset password", "forgot password"], responses: ["You can reset your password via Settings → Security → Reset Password.", "Use the 'Forgot Password' link on the login page."] },
-    { keywords: ["login error", "cannot login"], responses: ["Please check your credentials and try again.", "Clear browser cache and try again."] }
-  ],
-  "Sales": [
-    { keywords: ["pricing", "plans", "demo", "budget"], responses: ["Our Basic plan starts at ₹499/month, Pro plan at ₹999/month.", "Request a demo and our sales agent will connect with you."] }
-  ],
-  "Technical": [
-    { keywords: ["bug", "error", "crash"], responses: ["Please provide the error message so we can guide you.", "Restart the app and see if the issue persists."] }
-  ]
-};
+// -------------------- GLOBALS --------------------
+let CONFIG = {};
+let CONFIG_LOADED = false;
+let chatRef = null;
+let clientId = "client_" + Math.random().toString(36).substring(2, 10);
 
-let currentDept = "";
-let currentUser = "";
+// Firebase reference (initialized in HTML via <script>)
+const db = firebase.database();
 
-// -----------------------------
-// Append Message
-// -----------------------------
-function appendMessage(sender, text) {
-  const msgDiv = document.createElement("div");
-  msgDiv.classList.add(sender === "user" ? "user-msg" : "agent-msg");
-  msgDiv.textContent = text;
-  chatBody.appendChild(msgDiv);
-  chatBody.scrollTop = chatBody.scrollHeight;
-}
+// -------------------- LOAD CONFIG --------------------
+async function loadConfig() {
+  try {
+    const res = await fetch("/config");
+    CONFIG = await res.json();
 
-// -----------------------------
-// Get AI Reply
-// -----------------------------
-function getRandomReply(message, dept) {
-  const kb = knowledgeBase[dept];
-  if (!kb) return "🤖 Sorry, I’m not trained for that department yet.";
-  const msg = message.toLowerCase();
-  for (const item of kb) {
-    for (const key of item.keywords) {
-      if (msg.includes(key)) {
-        const responses = item.responses;
-        return responses[Math.floor(Math.random() * responses.length)];
-      }
+    if (
+      CONFIG.EMAILJS_PUBLIC_KEY &&
+      CONFIG.EMAILJS_SERVICE_ID &&
+      CONFIG.EMAILJS_TEMPLATE_ID
+    ) {
+      emailjs.init(CONFIG.EMAILJS_PUBLIC_KEY);
+      CONFIG_LOADED = true;
+      console.log("✅ EmailJS Initialized with config:", CONFIG);
+    } else {
+      console.error("❌ EmailJS config missing", CONFIG);
     }
+  } catch (err) {
+    console.error("❌ Failed to load /config", err);
   }
-  return "🤖 I'm sorry, I can only assist with questions related to our services.";
 }
 
-// -----------------------------
-// Support Form Submission
-// -----------------------------
-supportForm.addEventListener("submit", function (e) {
+// Immediately load configuration on startup
+(async () => {
+  await loadConfig();
+})();
+
+// -------------------- DOM ELEMENTS --------------------
+const form = document.getElementById("supportForm");
+const deptSelect = document.getElementById("supportType");
+const chatBody = document.querySelector(".chat-body");
+const chatInputBox = document.querySelector(".chat-input input");
+const chatSendBtn = document.querySelector(".chat-input button");
+
+// -------------------- FORM SUBMIT --------------------
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const name = document.getElementById("name").value;
-  const email = document.getElementById("email").value;
-  const phone = document.getElementById("phone").value;
-  const dept = document.getElementById("supportType").value;
-  const query = document.getElementById("query").value;
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const deptRaw = deptSelect.value.trim();
+  const query = document.getElementById("query").value.trim();
 
-  currentDept = dept;
-  currentUser = name;
+  if (!name || !email || !deptRaw || !query) {
+    alert("Please fill all fields.");
+    return;
+  }
 
-  if (agents[dept] && agents[dept].online) {
-    // ONLINE MODE
-    supportForm.classList.add("hidden");
-    chatBody.classList.remove("hidden");
-    chatInputContainer.classList.remove("hidden");
-    chatHeaderTitle.textContent = agents[dept].name;
-    appendMessage("agent", `Hi ${name}, I'm ${agents[dept].name}. How can I help you today?`);
+  const dept = deptRaw.charAt(0).toUpperCase() + deptRaw.slice(1).toLowerCase();
+  appendMessage("user", `👋 ${query}`);
+
+  // Hide form, show chat interface
+  form.classList.add("hidden");
+  document.querySelector(".chat-body").classList.remove("hidden");
+  document.querySelector(".chat-input").classList.remove("hidden");
+
+  // Check for available agent
+  const onlineAgent = await getOnlineAgentForDept(dept);
+
+  if (onlineAgent) {
+    appendMessage("system", `✅ Connecting to ${onlineAgent.name}...`);
+
+    const chatKey = `${dept}_${clientId}`;
+    chatRef = db.ref(`chats/${dept}/${chatKey}/messages`);
+    chatRef.push({ sender: "user", text: query, ts: Date.now() });
+
+    // Start listening to agent replies
+    listenToAgentMessages(dept, chatKey);
   } else {
-    // OFFLINE MODE -> send Email
+    appendMessage("system", "❌ No agent available. Sending email...");
+
+    if (!CONFIG_LOADED) await loadConfig();
+
+    if (
+      !CONFIG.EMAILJS_PUBLIC_KEY ||
+      !CONFIG.EMAILJS_SERVICE_ID ||
+      !CONFIG.EMAILJS_TEMPLATE_ID
+    ) {
+      appendMessage(
+        "system",
+        "⚠️ EmailJS config missing. Please check server setup."
+      );
+      return;
+    }
+
     const templateParams = {
       from_name: name,
-      from_email: email,
-      mobile_number: phone,
-      support_type: dept,
-      message: query
+      reply_to: email,
+      message: query,
+      department: dept,
     };
-    emailjs.send(window.EMAILJS_SERVICE_ID, window.EMAILJS_TEMPLATE_ID, templateParams)
-      .then(() => {
-        messageDiv.textContent = "✅ Thanks for contacting StaunchDesk! We’ll respond soon.";
-        messageDiv.style.color = "green";
-        supportForm.reset();
-      }, (error) => {
-        messageDiv.textContent = "❌ Failed to send. Please try again.";
-        messageDiv.style.color = "red";
-        console.error("EmailJS error:", error);
-      });
+
+    try {
+      const result = await emailjs.send(
+        CONFIG.EMAILJS_SERVICE_ID,
+        CONFIG.EMAILJS_TEMPLATE_ID,
+        templateParams
+      );
+      console.log("✅ Email sent successfully", result);
+      appendMessage("system", "📧 Your query has been emailed successfully!");
+    } catch (error) {
+      console.error("❌ EmailJS send error:", error);
+      appendMessage("system", "⚠️ Failed to send email. Please try later.");
+    }
   }
+
+  form.reset();
 });
 
-// -----------------------------
-// Sending Messages
-// -----------------------------
-sendBtn.addEventListener("click", sendMessage);
-chatInput.addEventListener("keypress", e => { if (e.key === "Enter") sendMessage(); });
+// -------------------- AGENT PRESENCE CHECK --------------------
+async function getOnlineAgentForDept(dept) {
+  try {
+    const snapshot = await db.ref(`presence/${dept}`).get();
+    if (snapshot.exists()) {
+      const agents = snapshot.val();
+      for (const [name, data] of Object.entries(agents)) {
+        if (data.online) return { name, email: data.email };
+      }
+    }
+  } catch (err) {
+    console.error("❌ Firebase error checking presence:", err);
+  }
+  return null;
+}
 
-function sendMessage() {
-  const message = chatInput.value.trim();
-  if (!message) return;
+// -------------------- LISTEN TO AGENT MESSAGES --------------------
+function listenToAgentMessages(dept, chatKey) {
+  const chatRef = db.ref(`chats/${dept}/${chatKey}/messages`);
+  chatRef.on("child_added", (snap) => {
+    const msg = snap.val();
+    if (msg.sender === "agent") appendMessage("agent", msg.text);
+  });
+}
 
-  appendMessage("user", message);
-  chatInput.value = "";
-  typingIndicator.classList.remove("hidden");
+// -------------------- SEND FOLLOW-UP MESSAGE --------------------
+chatSendBtn.addEventListener("click", async () => {
+  const text = chatInputBox.value.trim();
+  if (!text) return;
 
-  setTimeout(() => {
-    typingIndicator.classList.add("hidden");
-    const reply = getRandomReply(message, currentDept);
-    appendMessage("agent", reply);
-  }, 800);
+  appendMessage("user", text);
+
+  if (chatRef) {
+    await chatRef.push({ sender: "user", text, ts: Date.now() });
+  } else {
+    appendMessage(
+      "system",
+      "⚠️ Chat not connected. Please start a new chat session."
+    );
+  }
+
+  chatInputBox.value = "";
+});
+
+// -------------------- APPEND MESSAGE TO CHAT --------------------
+function appendMessage(sender, text) {
+  const msg = document.createElement("div");
+  msg.classList.add(
+    sender === "user"
+      ? "user-msg"
+      : sender === "agent"
+      ? "agent-msg"
+      : "system-msg"
+  );
+  msg.textContent = text;
+  chatBody.appendChild(msg);
+  chatBody.scrollTop = chatBody.scrollHeight;
 }
 

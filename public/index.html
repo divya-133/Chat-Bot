@@ -9,6 +9,23 @@
 
   <!-- ✅ EmailJS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <!-- ✅ Firebase Compat SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBsP14amVbh6uVkXUxFEqu6UTX1x5qG5sg",
+      authDomain: "sstaunchdesk-chat-f23f7.firebaseapp.com",
+      databaseURL: "https://staunchdesk-chat-f23f7-default-rtdb.firebaseio.com/",
+      projectId: "staunchdesk-chat-f23f7",
+      storageBucket: "staunchdesk-chat-f23f7.firebasestorage.app",
+      messagingSenderId: "634913544469",
+      appId: "1:634913544469:web:cfbc044eacd1a124cbf11c",
+      measurementId: "G-VV3TNEWSQ3",
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
 
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
 </head>
@@ -97,9 +114,9 @@
 
         <select id="supportType" required>
           <option value="">Choose department</option>
-          <option value="Sales">Sales Support</option>
-          <option value="Support">General Support</option>
-          <option value="Technical">Technical Support</option>
+          <option value="Sales">Sales</option>
+          <option value="Support">Support</option>
+          <option value="HR">HR</option>
         </select>
 
         <textarea id="query" placeholder="Type your query..." required></textarea>
@@ -109,16 +126,13 @@
       </form>
 
       <div class="chat-body hidden"></div>
-      <div class="typing-indicator hidden">Agent is typing<span class="dots"></span></div>
-
       <div class="chat-input hidden">
         <input type="text" placeholder="Type your query..." />
-        <button>Send</button>
+        <button type="button">Send</button>
       </div>
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
-
