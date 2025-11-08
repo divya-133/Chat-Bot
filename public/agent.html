@@ -27,9 +27,9 @@
 
         <label>Department
           <select id="department" required>
-            <option>Support</option>
-            <option>Sales</option>
-            <option>HR</option>
+            <option value="Support">Support</option>
+            <option value="Sales">Sales</option>
+            <option value="HR">HR</option>
           </select>
         </label>
 
@@ -55,6 +55,21 @@
             <h3 id="agentDisplayName">Agent</h3>
           </div>
         </div>
+
+        <!-- 🔔 Notification Bell -->
+        <div class="notif-wrapper">
+          <div class="notif-bell" id="notifBell">
+            <img src="https://cdn-icons-png.flaticon.com/512/1827/1827340.png" alt="Notifications" />
+            <span id="notifCount" class="notif-count hidden">0</span>
+          </div>
+          <div id="notifPopup" class="notif-popup hidden">
+            <div class="notif-header">
+              <h4>Notifications</h4>
+              <button id="clearAll" class="clear-all-btn">Clear All</button>
+            </div>
+            <ul id="notifList" class="notif-list"></ul>
+          </div>
+        </div>
       </div>
 
       <div class="chat-body">
@@ -77,3 +92,4 @@
   <script type="module" src="agent.js"></script>
 </body>
 </html>
+
