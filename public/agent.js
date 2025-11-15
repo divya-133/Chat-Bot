@@ -1,155 +1,3 @@
-// import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-// import { 
-//   getDatabase, ref, set, update, onChildAdded, push 
-// } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
-
-// const firebaseConfig = {
-//   apiKey: "AIzaSyBsP14amVbh6uVkXUxFEqu6UTX1x5qG5sg",
-//   authDomain: "sstaunchdesk-chat-f23f7.firebaseapp.com",
-//   databaseURL: "https://staunchdesk-chat-f23f7-default-rtdb.firebaseio.com/",
-//   projectId: "sstaunchdesk-chat-f23f7",
-//   storageBucket: "sstaunchdesk-chat-f23f7.firebasestorage.app",
-//   messagingSenderId: "634913544469",
-//   appId: "1:634913544469:web:cfbc044eacd1a124cbf11c",
-//   measurementId: "G-VV3TNEWSQ3"
-// };
-
-// const app = initializeApp(firebaseConfig);
-// const db = getDatabase(app);
-
-// // DOM elements
-// const form = document.getElementById("agentForm");
-// const chatSection = document.getElementById("chatSection");
-// const chatList = document.getElementById("chatList");
-// const chatWindow = document.getElementById("chatWindow");
-// const chatMessages = document.getElementById("chatMessages");
-// const agentMsgInput = document.getElementById("agentMessage");
-// const sendMsgBtn = document.getElementById("sendMsgBtn");
-// const goOfflineBtn = document.getElementById("goOfflineBtn");
-// const statusText = document.getElementById("statusText");
-
-// let agentName = null;
-// let department = null;
-// let agentEmail = null;
-// let presenceRef = null;
-// let chatRef = null;
-
-// // ------------------ FORM SUBMIT ------------------
-// form.addEventListener("submit", async e => {
-//   e.preventDefault();
-
-//   agentName = document.getElementById("agentName").value.trim();
-//   department = document.getElementById("department").value.trim();
-//   agentEmail = document.getElementById("agentEmail").value.trim();
-
-//   if (!agentName || !department || !agentEmail) {
-//     alert("Please fill all fields.");
-//     return;
-//   }
-
-//   const safeDept = department.charAt(0).toUpperCase() + department.slice(1).toLowerCase();
-//   const safeAgent = agentName.charAt(0).toUpperCase() + agentName.slice(1).toLowerCase();
-
-//   presenceRef = ref(db, `presence/${safeDept}/${safeAgent}`);
-//   await set(presenceRef, {
-//     online: true,
-//     email: agentEmail,
-//     ts: Date.now(),
-//   });
-
-//   statusText.textContent = `Online (${safeDept})`;
-//   statusText.classList.replace("offline", "online");
-//   form.classList.add("hidden");
-//   chatSection.classList.remove("hidden");
-//   goOfflineBtn.classList.remove("hidden");
-
-//   listenForChats(safeDept);
-
-//   window.addEventListener("beforeunload", () => {
-//     update(presenceRef, { online: false, ts: Date.now() });
-//   });
-// });
-
-// // ------------------ LISTEN FOR CHATS ------------------
-// function listenForChats(dept) {
-//   const deptRef = ref(db, `chats/${dept}`);
-//   onChildAdded(deptRef, snapshot => {
-//     const chatId = snapshot.key;
-//     if (!document.getElementById(chatId)) {
-//       const li = document.createElement("li");
-//       li.id = chatId;
-//       li.innerHTML = `
-//         ${chatId}
-//         <button class="chat-delete" title="Delete Chat">🗑️</button>
-//       `;
-//       li.onclick = (e) => {
-//         if (!e.target.classList.contains("chat-delete")) {
-//           openChat(dept, chatId);
-//         }
-//       };
-      
-//       // ⚡ DELETE BUTTON EVENT
-//       li.querySelector(".chat-delete").addEventListener("click", async (e) => {
-//         e.stopPropagation();
-//         const confirmDel = confirm(`Delete chat "${chatId}"?`);
-//         if (confirmDel) {
-//           try {
-//             const chatToDeleteRef = ref(db, `chats/${dept}/${chatId}`);
-//             await set(chatToDeleteRef, null); // delete from DB
-//             li.classList.add("fade-out");
-//             setTimeout(() => li.remove(), 300);
-//             console.log(`✅ Chat "${chatId}" deleted.`);
-//           } catch (err) {
-//             console.error("❌ Error deleting chat:", err);
-//           }
-//         }
-//       });
-
-//       chatList.appendChild(li);
-//     }
-//   });
-// }
-
-
-// // ------------------ OPEN CHAT ------------------
-// function openChat(dept, chatId) {
-//   chatWindow.classList.remove("hidden");
-//   chatMessages.innerHTML = "";
-//   chatRef = ref(db, `chats/${dept}/${chatId}/messages`);
-
-//   onChildAdded(chatRef, snapshot => {
-//     const msg = snapshot.val();
-//     const div = document.createElement("div");
-//     div.className = msg.sender === "agent" ? "agent-msg" : "user-msg";
-//     div.textContent = `${msg.sender}: ${msg.text}`;
-//     chatMessages.appendChild(div);
-//     chatMessages.scrollTop = chatMessages.scrollHeight;
-//   });
-// }
-
-// // ------------------ SEND MESSAGE ------------------
-// sendMsgBtn.addEventListener("click", async () => {
-//   const text = agentMsgInput.value.trim();
-//   if (!text || !chatRef) return;
-
-//   await push(chatRef, {
-//     sender: "agent",
-//     text,
-//     ts: Date.now(),
-//   });
-
-//   agentMsgInput.value = "";
-// });
-
-// // ------------------ GO OFFLINE ------------------
-// goOfflineBtn.addEventListener("click", async () => {
-//   if (presenceRef) {
-//     await update(presenceRef, { online: false, ts: Date.now() });
-//     alert("You are now offline.");
-//     window.location.reload();
-//   }
-// });
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import {
   getDatabase,
@@ -163,15 +11,18 @@ import {
   off,
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
+// Get company ID from script tag
+const companyId = document.currentScript?.dataset?.company || "default_company";
+console.log("🏢 Agent panel for company:", companyId);
+
 const firebaseConfig = {
   apiKey: "AIzaSyBsP14amVbh6uVkXUxFEqu6UTX1x5qG5sg",
-  authDomain: "sstaunchdesk-chat-f23f7.firebaseapp.com",
+  authDomain: "staunchdesk-chat-f23f7.firebaseapp.com",
   databaseURL: "https://staunchdesk-chat-f23f7-default-rtdb.firebaseio.com/",
-  projectId: "sstaunchdesk-chat-f23f7",
-  storageBucket: "sstaunchdesk-chat-f23f7.firebasestorage.app",
+  projectId: "staunchdesk-chat-f23f7",
+  storageBucket: "staunchdesk-chat-f23f7.appspot.com",
   messagingSenderId: "634913544469",
   appId: "1:634913544469:web:cfbc044eacd1a124cbf11c",
-  measurementId: "G-VV3TNEWSQ3",
 };
 
 const app = initializeApp(firebaseConfig);
@@ -209,7 +60,7 @@ window.addEventListener("load", async () => {
     department = saved.dept;
     agentEmail = saved.email;
 
-    presenceRef = ref(db, `presence/${department}/${agentName}`);
+    presenceRef = ref(db, `presence/${companyId}/${department}/${agentName}`);
     await update(presenceRef, {
       online: true,
       ts: Date.now(),
@@ -244,7 +95,7 @@ form.addEventListener("submit", async (e) => {
     agentName.charAt(0).toUpperCase() +
     agentName.slice(1).toLowerCase();
 
-  presenceRef = ref(db, `presence/${safeDept}/${safeAgent}`);
+  presenceRef = ref(db, `presence/${companyId}/${safeDept}/${safeAgent}`);
   await set(presenceRef, {
     online: true,
     email: agentEmail,
@@ -268,7 +119,7 @@ form.addEventListener("submit", async (e) => {
 
 // ------------------ NOTIFICATIONS ------------------
 function listenForNotifications(dept) {
-  const notifRef = ref(db, `notifications/${dept}`);
+  const notifRef = ref(db, `notifications/${companyId}/${dept}`);
   let unread = 0;
   const shown = new Set();
 
@@ -286,7 +137,7 @@ function listenForNotifications(dept) {
     notifList.innerHTML = "";
     unread = 0;
     notifCount.classList.add("hidden");
-    await set(ref(db, `notifications/${dept}`), null);
+    await set(ref(db, `notifications/${companyId}/${dept}`), null);
   });
 
   onChildAdded(notifRef, (snap) => {
@@ -324,13 +175,13 @@ function listenForNotifications(dept) {
 
 // ------------------ CHATS ------------------
 function listenForChats(dept) {
-  const deptRef = ref(db, `chats/${dept}`);
+  const deptRef = ref(db, `chats/${companyId}/${dept}`);
 
   onChildAdded(deptRef, async (snapshot) => {
     const chatId = snapshot.key;
 
     // ✅ Fetch user info
-    const infoRef = ref(db, `chats/${dept}/${chatId}/info`);
+    const infoRef = ref(db, `chats/${companyId}/${dept}/${chatId}/info`);
     const infoSnap = await get(infoRef);
     let userName = "Unknown User";
     let userEmail = "";
@@ -372,7 +223,7 @@ function listenForChats(dept) {
     li.querySelector(".chat-delete").addEventListener("click", async (e) => {
       e.stopPropagation();
       if (confirm(`Delete chat with ${userName}?`)) {
-        await set(ref(db, `chats/${dept}/${chatId}`), null);
+        await set(ref(db, `chats/${companyId}/${dept}/${chatId}`), null);
         li.classList.add("fade-out");
         setTimeout(() => li.remove(), 300);
       }
@@ -387,7 +238,7 @@ function openChat(dept, chatId) {
   chatWindow.classList.remove("hidden");
   chatMessages.innerHTML = "";
   if (chatRef) off(chatRef);
-  chatRef = ref(db, `chats/${dept}/${chatId}/messages`);
+  chatRef = ref(db, `chats/${companyId}/${dept}/${chatId}/messages`);
 
   onChildAdded(chatRef, (snap) => {
     const msg = snap.val();
