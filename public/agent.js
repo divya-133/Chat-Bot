@@ -1,3 +1,7 @@
+// Company ID now comes from localStorage (HR enters it in login page)
+let companyId = localStorage.getItem("agentCompanyId") || null;
+
+// Firebase imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import {
   getDatabase,
@@ -11,9 +15,7 @@ import {
   off,
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
-// Get company ID from script tag
-const companyId = document.currentScript?.dataset?.company || "default_company";
-console.log("🏢 Agent panel for company:", companyId);
+console.log("🏢 Loaded company:", companyId);
 
 const firebaseConfig = {
   apiKey: "AIzaSyBsP14amVbh6uVkXUxFEqu6UTX1x5qG5sg",
@@ -84,6 +86,7 @@ form.addEventListener("submit", async (e) => {
   agentName = document.getElementById("agentName").value.trim();
   department = document.getElementById("department").value.trim();
   agentEmail = document.getElementById("agentEmail").value.trim();
+  companyId = document.getElementById("companyIdInput").value.trim(); 
 
   if (!agentName || !department || !agentEmail)
     return alert("Fill all fields!");
